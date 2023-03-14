@@ -38,6 +38,10 @@ struct AnimatorImpl;
  */
 class UTILS_PUBLIC Animator {
 public:
+
+    Animator(FilamentAsset* animationAsset);
+    ~Animator();
+
     /**
      * Applies rotation, translation, and scale to entities that have been targeted by the given
      * animation definition. Uses filament::TransformManager.
@@ -97,6 +101,14 @@ public:
     // For internal use only.
     void addInstance(FFilamentInstance* instance);
 
+    /** Add the model to be animated. */
+    void addAnimatedAsset(FilamentAsset* assetToAnimate);
+    /** Add entity to animate. */
+    void addAnimatedEntity(utils::Entity entity);
+
+    /** Remove the model to be animated. */
+    void removeAnimatedAsset();
+
 private:
 
     /*! \cond PRIVATE */
@@ -106,11 +118,13 @@ private:
 
     // If "instance" is null, then this is the primary animator.
     Animator(FFilamentAsset const* asset, FFilamentInstance* instance);
-    ~Animator();
 
     Animator(const Animator& animator) = delete;
     Animator(Animator&& animator) = delete;
     Animator& operator=(const Animator&) = delete;
+
+    bool loadAnimatorImpl(FFilamentAsset* asset, FFilamentInstance* instance);
+    void addAnimatedAsset(FFilamentAsset* asset, FFilamentInstance* instance);
 
     AnimatorImpl* mImpl;
 };

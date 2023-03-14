@@ -667,12 +667,19 @@ void FAssetLoader::createRenderable(const cgltf_data* srcAsset, const cgltf_node
     Primitive* outputPrim = prims.data();
     const cgltf_primitive* inputPrim = &mesh->primitives[0];
 
+    entity.renderableLookup = instance->renderables.size();
     Aabb aabb;
 
     // glTF spec says that all primitives must have the same number of morph targets.
     const cgltf_size numMorphTargets = inputPrim ? inputPrim->targets_count : 0;
     RenderableManager::Builder builder(primitiveCount);
     builder.morphing(numMorphTargets);
+
+    FilamentInstance::RenderableContext& ctx = instance->renderables.emplace_back();
+    ctx.count = primitiveCount;
+    ctx.jointCount = node->skin == nullptr ? 0 : node->skin->joints_count;
+    ctx.geos.resize(primitiveCount);
+    ctx.morphTargets = numMorphTargets;
 
     // For each prim, create a Filament VertexBuffer, IndexBuffer, and MaterialInstance.
     // The VertexBuffer and IndexBuffer objects are cached for possible re-use, but MaterialInstance
@@ -715,12 +722,20 @@ void FAssetLoader::createRenderable(const cgltf_data* srcAsset, const cgltf_node
         // facilities for these parameters, which is not a huge loss since some of the buffer
         // view and accessor features already have this functionality.
         builder.geometry(index, primType, outputPrim->vertices, outputPrim->indices);
+        ctx.geos[index].vertices = outputPrim->vertices;
+        ctx.geos[index].indices = outputPrim->indices;
+        ctx.geos[index].offset = 0;
+        ctx.geos[index].minIndex = outputPrim->vertices->getVertexCount() - 1, 
+        ctx.geos[index].count = outputPrim->indices->getIndexCount() - 1;
+        ctx.geos[index].type = (int)primType;
 
         if (numMorphTargets) {
             assert_invariant(outputPrim->targets);
             builder.morphing(0, index, outputPrim->targets);
         }
     }
+
+    ctx.boundingBox = aabb;
 
     FixedCapacityVector<CString> morphTargetNames(numMorphTargets);
     for (cgltf_size i = 0, c = mesh->target_names_count; i < c; ++i) {
@@ -761,6 +776,7 @@ void FAssetLoader::createRenderable(const cgltf_data* srcAsset, const cgltf_node
         for (cgltf_size i = 0, c = std::min(size, node->weights_count); i < c; ++i) {
             weights[i] = node->weights[i];
         }
+        ctx.morphWeights = std::vector<float>(weights.data(), weights.data() + weights.size());
         mRenderableManager.setMorphWeights(renderable, weights.data(), size);
     }
 }

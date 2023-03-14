@@ -351,6 +351,10 @@ size_t FilamentInstance::getMaterialInstanceCount() const noexcept {
     return downcast(this)->getMaterialInstanceCount();
 }
 
+const std::vector<FilamentInstance::RenderableContext>& FilamentInstance::getRenderableContext() const noexcept {
+    return this->renderables;
+}
+
 const MaterialInstance* const* FilamentInstance::getMaterialInstances() const noexcept {
     return downcast(this)->getMaterialInstances();
 }

@@ -22,8 +22,12 @@
 
 #include <filament/Box.h>
 
+#include <vector>
+
 namespace filament {
 class MaterialInstance;
+class VertexBuffer;
+class IndexBuffer;
 }
 
 namespace filament::gltfio {
@@ -152,6 +156,30 @@ public:
 
     /** Gets the number of materials returned by getMaterialInstances(). */
     size_t getMaterialInstanceCount() const noexcept;
+
+    /** Returns the builder used for the renderable */
+    struct RenderableContext
+    {
+        size_t count = 0;
+        Aabb boundingBox;
+        size_t jointCount = 0;
+        size_t morphTargets = 0;
+        std::vector<float> morphWeights;
+
+        struct Geo
+        {
+            VertexBuffer* vertices = nullptr;
+            IndexBuffer* indices = nullptr;
+            size_t offset = 0;
+            size_t minIndex = 0;
+            size_t maxIndex = 0;
+            size_t count = 0;
+            int type = 0;
+        };
+        std::vector<Geo> geos;        
+    };
+    std::vector<RenderableContext> renderables;
+    const std::vector<RenderableContext>& getRenderableContext() const noexcept;
 
     /**
      * Releases ownership of material instances.

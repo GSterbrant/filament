@@ -527,6 +527,18 @@ public:
     void setBones(Instance instance, math::mat4f const* transforms, size_t boneCount = 1, size_t offset = 0); //!< \overload
 
     /**
+     * Copy bones between instances
+     * 
+     */
+    void copyBones(Instance fromInstance, Instance toInstance);
+
+    /**
+     * Copy morph targets between instances
+     * 
+     */
+    void copyMorphTargets(Instance fromInstance, Instance toInstance);
+
+    /**
      * Associates a region of a SkinningBuffer to a renderable instance
      *
      * Note: due to hardware limitations offset + 256 must be smaller or equal to

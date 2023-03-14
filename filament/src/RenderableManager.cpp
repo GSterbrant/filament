@@ -128,6 +128,14 @@ void RenderableManager::setBones(Instance instance,
     downcast(this)->setBones(instance, transforms, boneCount, offset);
 }
 
+void RenderableManager::copyBones(Instance fromInstance, Instance toInstance) {
+    downcast(this)->copyBones(fromInstance, toInstance);
+}
+
+void RenderableManager::copyMorphTargets(Instance fromInstance, Instance toInstance) {
+    downcast(this)->copyMorphTargets(fromInstance, toInstance);
+}
+
 void RenderableManager::setSkinningBuffer(Instance instance,
         SkinningBuffer* skinningBuffer, size_t count, size_t offset) {
     downcast(this)->setSkinningBuffer(instance, downcast(skinningBuffer), count, offset);

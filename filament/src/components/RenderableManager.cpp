@@ -632,6 +632,30 @@ void FRenderableManager::setBones(Instance ci,
     }
 }
 
+void FRenderableManager::copyBones(Instance fromInstance, Instance toInstance) {
+    if (fromInstance && toInstance) {
+        Bones& fromBones = mManager[fromInstance].bones;
+        Bones& toBones = mManager[toInstance].bones;
+
+        ASSERT_PRECONDITION(!fromBones.skinningBufferMode,
+                "Disable skinning buffer mode to use this API");
+
+        ASSERT_PRECONDITION(!toBones.skinningBufferMode,
+                "Disable skinning buffer mode to use this API");
+        
+        // Super ugly, but best way to deal with the gltf loading since you can't make the gltf loader
+        // use a skinning buffer in any meaningful way
+        if (fromBones.handle && toBones.handle) {
+            auto& driverApi = mEngine.getDriverApi();
+            driverApi.destroyBufferObject(fromBones.handle);
+            fromBones.handle = toBones.handle;
+            fromBones.count = toBones.count;
+            fromBones.offset = toBones.offset;
+            fromBones.skinningBufferMode = toBones.skinningBufferMode;
+        }
+    }
+}
+
 void FRenderableManager::setSkinningBuffer(FRenderableManager::Instance ci,
         FSkinningBuffer* skinningBuffer, size_t count, size_t offset) {
 
@@ -725,6 +749,19 @@ size_t FRenderableManager::getMorphTargetCount(Instance instance) const noexcept
         return morphWeights.count;
     }
     return 0;
+}
+
+void FRenderableManager::copyMorphTargets(Instance fromInstance, Instance toInstance) {
+    MorphWeights& sourceWeights = mManager[fromInstance].morphWeights;
+    MorphWeights& toWeights = mManager[toInstance].morphWeights;
+    Slice<MorphTargets>& sourceTargets = mManager[fromInstance].morphTargets;
+    Slice<MorphTargets>& toTargets = mManager[toInstance].morphTargets;
+
+
+    toTargets.clear();
+    toTargets.set(sourceTargets.begin(), sourceTargets.end());
+    toWeights.count = sourceWeights.count;
+    toWeights.handle = sourceWeights.handle;
 }
 
 void FRenderableManager::setLightChannel(Instance ci, unsigned int channel, bool enable) noexcept {
